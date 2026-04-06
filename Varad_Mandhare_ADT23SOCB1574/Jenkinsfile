@@ -3,13 +3,27 @@ pipeline {
 
     stages {
 
-        stage('Build Docker Image') {
+        stage('Verify Folder') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'docker build -t my-app .'
+                        sh 'ls'
                     } else {
-                        bat 'docker build -t my-app .'
+                        bat 'dir'
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('Varad_Mandhare_ADT23SOCB1574') {
+                    script {
+                        if (isUnix()) {
+                            sh 'docker build -t learnscape .'
+                        } else {
+                            bat 'docker build -t learnscape .'
+                        }
                     }
                 }
             }
@@ -20,19 +34,40 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh '''
-                        docker stop my-app || true
-                        docker rm my-app || true
-                        docker run -d -p 8000:8000 --name my-app my-app
+                        docker stop learnscape_app || true
+                        docker rm learnscape_app || true
+                        docker run -d -p 3000:80 --name learnscape_app learnscape
                         '''
                     } else {
                         bat '''
-                        docker stop my-app || exit 0
-                        docker rm my-app || exit 0
-                        docker run -d -p 8000:8000 --name my-app my-app
+                        docker stop learnscape_app || exit 0
+                        docker rm learnscape_app || exit 0
+                        docker run -d -p 3000:80 --name learnscape_app learnscape
                         '''
                     }
                 }
             }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'docker ps'
+                    } else {
+                        bat 'docker ps'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'SUCCESS ✅'
+        }
+        failure {
+            echo 'FAILED ❌'
         }
     }
 }
