@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'docker build -t my-app .'
+                    } else {
+                        bat 'docker build -t my-app .'
+                    }
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        docker stop my-app || true
+                        docker rm my-app || true
+                        docker run -d -p 8000:8000 --name my-app my-app
+                        '''
+                    } else {
+                        bat '''
+                        docker stop my-app || exit 0
+                        docker rm my-app || exit 0
+                        docker run -d -p 8000:8000 --name my-app my-app
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
